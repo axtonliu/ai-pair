@@ -121,7 +121,7 @@ Use TaskCreate to set up initial task structure:
 
 ### Step 3: Launch Agents
 
-Launch 3 agents using the Agent tool with `subagent_type: "general-purpose"` and `mode: "bypassPermissions"`.
+Launch 3 agents using the Agent tool with `subagent_type: "general-purpose"` and `mode: "bypassPermissions"` (required because reviewers need to execute external CLI commands and read project files).
 
 See Agent Prompt Templates below for each agent's startup prompt.
 
@@ -221,7 +221,7 @@ Review process:
 
 Focus: bugs, security vulnerabilities, concurrency/race conditions, performance, edge cases.
 
-Fallback: If codex command fails, analyze with Claude and note "[Codex unavailable, using Claude]".
+Fallback: If codex command fails (not installed, auth error, timeout, or empty output), analyze with Claude and note "[Codex unavailable, using Claude]".
 Stay active for next review task.
 ```
 
@@ -253,7 +253,7 @@ Review process:
 
 Focus: logical coherence, factual accuracy, information architecture, technical terminology.
 
-Fallback: If codex command fails, analyze with Claude and note "[Codex unavailable, using Claude]".
+Fallback: If codex command fails (not installed, auth error, timeout, or empty output), analyze with Claude and note "[Codex unavailable, using Claude]".
 Stay active for next review task.
 ```
 
@@ -290,7 +290,7 @@ Review process:
 
 Focus: architecture, design patterns, maintainability, alternative implementations.
 
-Fallback: If gemini command fails, analyze with Claude and note "[Gemini unavailable, using Claude]".
+Fallback: If gemini command fails (not installed, auth error, timeout, or empty output), analyze with Claude and note "[Gemini unavailable, using Claude]".
 Stay active for next review task.
 ```
 
@@ -325,7 +325,7 @@ Review process:
 
 Focus: readability, content appeal, style consistency, target audience fit.
 
-Fallback: If gemini command fails, analyze with Claude and note "[Gemini unavailable, using Claude]".
+Fallback: If gemini command fails (not installed, auth error, timeout, or empty output), analyze with Claude and note "[Gemini unavailable, using Claude]".
 Stay active for next review task.
 ```
 

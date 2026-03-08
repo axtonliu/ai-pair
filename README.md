@@ -28,7 +28,7 @@ Different models have different "attention patterns" — they don't just find di
 | **GPT (via Codex)** | Analytical, rigorous | Logic chains, fact-checking, edge cases |
 | **Gemini** | Reader-centric, editorial | Readability, engagement, audience fit |
 
-AI-Pair turns this difference into a structured workflow.
+AI-Pair turns this difference into a structured workflow. It's a [Claude Code Skill](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills) — a reusable instruction set that extends Claude Code's capabilities.
 
 ## How It Works
 
@@ -54,18 +54,22 @@ The workflow is semi-automatic — you stay in control at every step:
 |------|---------|---------|
 | [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) | Team Lead + agent runtime | `npm install -g @anthropic-ai/claude-code` |
 | [Codex CLI](https://github.com/openai/codex) | GPT-powered reviewer | `npm install -g @openai/codex` |
-| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | Gemini-powered reviewer | `npm install -g @anthropic-ai/gemini-cli` or see docs |
+| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | Gemini-powered reviewer | `npm install -g @google/gemini-cli` |
 
 All three CLIs must have authentication configured before use.
+
+> **Quick check:** Run `claude --version`, `codex --version`, and `gemini --version` to verify all three are installed.
 
 ## Installation
 
 ### Option A: Direct Install (Recommended)
 
 ```bash
-# Clone to your Claude Code skills directory
+# Clone to your global Claude Code skills directory
 git clone https://github.com/axtonliu/ai-pair.git ~/.claude/skills/ai-pair
 ```
+
+For project-level installation, clone into `.claude/skills/ai-pair` within your project directory instead.
 
 ### Option B: Manual
 
@@ -111,7 +115,7 @@ We used `content-team` to review a newsletter article. The three AIs found compl
 - **GPT** (Codex): independently found the "Lost in the Middle" paper and challenged a citation
 - **Gemini**: suggested the opening was too academic for the target audience
 
-None of these overlapped. That's the point.
+None of these overlapped. That's the point. See [`examples/`](examples/) for step-by-step walkthrough scenarios.
 
 ## File Structure
 
