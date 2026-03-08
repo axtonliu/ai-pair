@@ -1,54 +1,58 @@
 # AI-Pair: Heterogeneous AI Team Collaboration
 
+# AI-Pair：异构 AI 团队协作
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Claude Code Skill](https://img.shields.io/badge/Claude%20Code-Skill-blue)](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills)
 
-Coordinate multiple AI models to review the same work from fundamentally different angles. One creates, two review — not for redundancy, but because they see different things.
+Coordinate multiple AI models to work together as a team. One creates, two review — not for redundancy, but because different models naturally focus on different dimensions.
 
-一个创作，两个审查 — 不是为了冗余，而是因为不同 AI 模型天然关注不同维度。
+让不同 AI 模型组成团队协作。一个创作，两个审查 — 不是为了冗余，而是因为不同模型天然关注不同维度。
 
 ---
 
-> **Status: Experimental**
-> - Public prototype, works for real workflows
+> **Status: Experimental | 状态：实验性**
+> - Public prototype, works for real workflows | 公开原型，可用于实际工作流
 > - Requires Claude Code + Codex CLI + Gemini CLI
-> - Low-maintenance; submit reproducible issues only
+> - Low-maintenance; submit reproducible issues only | 低维护；仅接受可复现的 issue
 
 ---
 
-## Why This Exists
+## Why This Exists | 为什么做这个
 
-Most people use multiple AI subscriptions by asking the same question to each and comparing answers. That's the biggest waste.
+Most people use multiple AI subscriptions by asking the same question to each and comparing answers. That's useful sometimes, but it only uses one dimension of what different models can do — you get multiple answers to the same question, instead of multiple perspectives on the same work.
 
-Different models have different "attention patterns" — they don't just find different bugs, they look at completely different dimensions:
+大部分人用多个 AI 的方式是：同一个问题分别问一遍，然后对比答案。这有时候有用，但只用到了不同模型能力的一个维度 — 你得到的是同一个问题的多个回答，而不是同一份工作的多个视角。
 
-| Model | Review Style | Best For |
-|-------|-------------|----------|
-| **Claude** | Balanced, architectural | Overall structure, style compliance |
-| **GPT (via Codex)** | Analytical, rigorous | Logic chains, fact-checking, edge cases |
-| **Gemini** | Reader-centric, editorial | Readability, engagement, audience fit |
+AI-Pair turns model differences into a structured workflow: assign each model a role that matches its strength, and let them review the same work from different angles. It's a [Claude Code Skill](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills) — a reusable instruction set that extends Claude Code's capabilities.
 
-AI-Pair turns this difference into a structured workflow. It's a [Claude Code Skill](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills) — a reusable instruction set that extends Claude Code's capabilities.
+AI-Pair 把模型差异变成结构化的工作流：给每个模型分配匹配其特长的角色，让它们从不同角度审查同一份工作。它是一个 [Claude Code Skill](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills) — 一组可复用的指令，扩展 Claude Code 的能力。
 
-## How It Works
+## How It Works | 工作原理
 
 ```
-User (you)
+User (you) | 用户（你）
   |
-Team Lead (Claude Code session)
-  |-- creator (Claude Code agent) — writes code or content
-  |-- codex-reviewer (agent → Codex CLI) — analytical review
-  |-- gemini-reviewer (agent → Gemini CLI) — editorial review
+Team Lead (Claude Code session) | 团队领导（Claude Code 会话）
+  |-- creator (Claude Code agent) — writes code or content | 创作者 — 写代码或内容
+  |-- codex-reviewer (agent → Codex CLI) — analytical review | 分析型审查
+  |-- gemini-reviewer (agent → Gemini CLI) — editorial review | 编辑型审查
 ```
 
 The workflow is semi-automatic — you stay in control at every step:
 
-1. You assign a task → creator executes
-2. Creator reports back → you decide whether to send for review
-3. Both reviewers analyze in parallel → consolidated report
-4. You decide: revise or pass → loop or next task
+工作流是半自动的 — 每一步你都保持控制权：
 
-## Prerequisites
+1. You assign a task → creator executes | 你下达任务 → 创作者执行
+2. Creator reports back → you decide whether to send for review | 创作者回报 → 你决定是否送审
+3. Both reviewers analyze in parallel → consolidated report | 两个审查者并行分析 → 汇总报告
+4. You decide: revise or pass → loop or next task | 你决定：修改还是通过 → 循环或下一个任务
+
+## Prerequisites | 前置条件
+
+All three are **command-line tools** that run in your terminal (Terminal, iTerm2, etc.), not desktop apps.
+
+三个都是**命令行工具**，在终端中运行（Terminal、iTerm2 等），不是桌面应用。
 
 | Tool | Purpose | Install |
 |------|---------|---------|
@@ -58,99 +62,116 @@ The workflow is semi-automatic — you stay in control at every step:
 
 All three CLIs must have authentication configured before use.
 
-> **Quick check:** Run `claude --version`, `codex --version`, and `gemini --version` to verify all three are installed.
+三个 CLI 使用前都需要配置好认证。
 
-## Installation
+> **Quick check | 快速检查:** Run `claude --version`, `codex --version`, and `gemini --version` to verify all three are installed.
 
-### Option A: Direct Install (Recommended)
+## Installation | 安装
+
+### Option A: Direct Install (Recommended) | 直接安装（推荐）
 
 ```bash
 # Clone to your global Claude Code skills directory
+# 克隆到 Claude Code 全局 skills 目录
 git clone https://github.com/axtonliu/ai-pair.git ~/.claude/skills/ai-pair
 ```
 
 For project-level installation, clone into `.claude/skills/ai-pair` within your project directory instead.
 
-### Option B: Manual
+如需项目级安装，克隆到项目目录下的 `.claude/skills/ai-pair`。
 
-1. Download `SKILL.md` from this repo
-2. Place it in `~/.claude/skills/ai-pair/SKILL.md`
-3. Restart Claude Code
+### Option B: Manual | 手动安装
 
-## Usage
+1. Download `SKILL.md` from this repo | 下载本仓库的 `SKILL.md`
+2. Place it in `~/.claude/skills/ai-pair/SKILL.md` | 放到 `~/.claude/skills/ai-pair/SKILL.md`
+3. Restart Claude Code | 重启 Claude Code
 
-### Dev Team — for code, bugs, refactoring
+## Usage | 使用
+
+### Dev Team — for code, bugs, refactoring | 开发团队 — 写代码、修 bug、重构
 
 ```bash
 /ai-pair dev-team MyProject
 ```
 
-Team Lead creates:
-- **developer** — writes code
-- **codex-reviewer** — checks bugs, security, performance, edge cases
-- **gemini-reviewer** — checks architecture, design patterns, maintainability
+Team Lead creates | 团队领导创建:
+- **developer** — writes code | 写代码
+- **codex-reviewer** — checks bugs, security, performance, edge cases | 审查 bug、安全、性能、边界条件
+- **gemini-reviewer** — checks architecture, design patterns, maintainability | 审查架构、设计模式、可维护性
 
-### Content Team — for articles, scripts, newsletters
+### Content Team — for articles, scripts, newsletters | 内容团队 — 写文章、脚本、Newsletter
 
 ```bash
 /ai-pair content-team AI-Newsletter
 ```
 
-Team Lead creates:
-- **author** — writes content
-- **codex-reviewer** — checks logic, accuracy, structure, fact-checking
-- **gemini-reviewer** — checks readability, engagement, style, audience fit
+Team Lead creates | 团队领导创建:
+- **author** — writes content | 写内容
+- **codex-reviewer** — checks logic, accuracy, structure, fact-checking | 审查逻辑、准确性、结构、事实核查
+- **gemini-reviewer** — checks readability, engagement, style, audience fit | 审查可读性、吸引力、风格、受众适配
 
-### Stop Team
+### Stop Team | 关闭团队
 
 ```bash
 /ai-pair team-stop
 ```
 
-## Real-World Example
+## Real-World Example | 真实案例
 
 We used `content-team` to review a newsletter article. The three AIs found completely different issues:
 
-- **Claude** (Team Lead): spotted an overreach in interpreting a research paper
-- **GPT** (Codex): independently found the "Lost in the Middle" paper and challenged a citation
-- **Gemini**: suggested the opening was too academic for the target audience
+我们用 `content-team` 审查了一篇 Newsletter 文章。三个 AI 发现的问题完全不同：
+
+- **Claude** (Team Lead): spotted an overreach in interpreting a cited source | 发现对引用来源的过度解读
+- **GPT** (Codex): dissected the argument chain and challenged a logical leap | 拆解论证链，质疑逻辑跳跃
+- **Gemini**: suggested the opening was too academic for the target audience | 建议开头对目标读者来说太学术化
 
 None of these overlapped. That's the point. See [`examples/`](examples/) for step-by-step walkthrough scenarios.
 
-## File Structure
+三者零重叠。这就是意义所在。查看 [`examples/`](examples/) 获取分步演示场景。
+
+## File Structure | 文件结构
 
 ```
 ai-pair/
-├── SKILL.md       # Claude Code skill definition (Agent Teams mode)
-├── README.md      # This file
+├── SKILL.md       # Claude Code skill definition | Skill 定义文件
+├── README.md      # This file | 本文件
 ├── LICENSE         # MIT
-└── examples/      # Usage examples
+└── examples/      # Usage examples | 使用示例
     ├── dev-team.md
     └── content-team.md
 ```
 
-## What's Not Included
+## What's Not Included | 未包含的功能
 
 This open-source version includes the **Agent Teams mode** only. The full private version also has:
 
-- **Manual mode** — two CLI instances communicating via shared COLLAB.md file
-- **iTerm2 orchestration** — automated Author/Reviewer relay with file watchers
+开源版仅包含 **Agent Teams 模式**。完整私有版还包括：
 
-These require specific local setup (iTerm2, Python dependencies) and are maintained separately.
+- **Manual mode** — two CLI instances communicating via shared file | 手动模式 — 两个 CLI 通过共享文件通信
+- **iTerm2 orchestration** — automated Author/Reviewer relay with file watchers | iTerm2 编排 — 自动化的创作/审查中继
 
-## Evolution
+These require specific local setup and are maintained separately.
 
-AI-Pair evolved from [AI Roundtable](https://github.com/axtonliu/ai-roundtable), which focused on multi-AI discussions. AI-Pair restructures the concept around a create-review workflow that's more practical for daily use.
+这些需要特定的本地配置，单独维护。
 
-## Contributing
+## Evolution | 演变
+
+AI-Pair evolved from [AI Roundtable](https://github.com/axtonliu/ai-roundtable), a Chrome extension that lets multiple AI web interfaces discuss and cross-review in the same panel. AI-Pair moves this concept to the command line with structured role assignments, making it more practical for daily workflows.
+
+AI-Pair 从 [AI Roundtable](https://github.com/axtonliu/ai-roundtable) 演变而来。AI Roundtable 是一个 Chrome 扩展，让多个 AI 的网页版在同一个面板里讨论和互评。AI-Pair 把这个概念搬到了命令行，加入了结构化的角色分工，更适合日常工作流。
+
+## Contributing | 贡献
 
 This is a low-maintenance project. Bug fixes and documentation improvements are welcome. For feature requests, please open an issue to discuss first.
 
-## License
+这是一个低维护项目。欢迎 bug 修复和文档改进。功能需求请先开 issue 讨论。
+
+## License | 许可证
 
 [MIT](LICENSE) - Axton Liu
 
-## Author
+## Author | 作者
 
 **Axton Liu** — AI educator, creator of MAPS AI Framework
 

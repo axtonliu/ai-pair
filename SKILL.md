@@ -17,15 +17,7 @@ Uses Claude Code's native Agent Teams capability with Codex and Gemini as review
 
 ## Why Multiple AI Reviewers?
 
-Different AI models have fundamentally different "attention patterns":
-
-| Model | Review Style | Strength |
-|-------|-------------|----------|
-| **Claude** | Balanced, architectural | Overall structure and style compliance |
-| **GPT (Codex)** | Analytical, rigorous | Logic chains, fact-checking, edge cases |
-| **Gemini** | Reader-centric, editorial | Readability, engagement, audience fit |
-
-They don't just find different bugs — they look at completely different dimensions.
+Different AI models have fundamentally different review tendencies. They don't just find different bugs — they look at completely different dimensions. Using reviewers from different model families maximizes coverage.
 
 ## Commands
 
