@@ -2,21 +2,24 @@
 
 # AI-Pair：异构 AI 团队协作
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg)](#status)
 [![Claude Code Skill](https://img.shields.io/badge/Claude%20Code-Skill-blue)](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills)
 
 Coordinate multiple AI models to work together as a team. One creates, two review — not for redundancy, but because different models naturally focus on different dimensions.
 
 让不同 AI 模型组成团队协作。一个创作，两个审查 — 不是为了冗余，而是因为不同模型天然关注不同维度。
 
----
+> **Next Step:** Want to turn Skills from demo to asset? Check out [Agent Skills Resource Library](https://www.axtonliu.ai/agent-skills) (includes slides, PDF, diagnostics)
+
+## Status
 
 > **Status: Experimental | 状态：实验性**
-> - Public prototype, works for real workflows | 公开原型，可用于实际工作流
+>
+> - This is a public prototype that works for real workflows, but does not yet cover all edge cases. | 公开原型，可用于实际工作流，但未覆盖所有边界情况。
 > - Requires Claude Code + Codex CLI + Gemini CLI
-> - Low-maintenance; submit reproducible issues only | 低维护；仅接受可复现的 issue
-
----
+> - My primary focus is demonstrating how tools and systems work together, not maintaining this codebase. | 重点是展示工具和系统如何协作，而非维护这个代码库。
+> - If you encounter issues, please submit a reproducible case (input + output + steps to reproduce). | 如遇问题，请提交可复现的案例。
 
 ## Why This Exists | 为什么做这个
 
@@ -179,18 +182,37 @@ AI-Pair 从 [AI Roundtable](https://github.com/axtonliu/ai-roundtable) 演变而
 
 ## Contributing | 贡献
 
-This is a low-maintenance project. Bug fixes and documentation improvements are welcome. For feature requests, please open an issue to discuss first.
+Contributions welcome (low-maintenance project):
 
-这是一个低维护项目。欢迎 bug 修复和文档改进。功能需求请先开 issue 讨论。
+欢迎贡献（低维护项目）：
+
+- Reproducible bug reports (input + output + steps + environment) | 可复现的 bug 报告
+- Documentation improvements | 文档改进
+- Small PRs (fixes/docs) | 小型 PR（修复/文档）
+
+> **Note:** Feature requests may not be acted on due to limited maintenance capacity. | 功能需求可能因维护精力有限而无法响应。
 
 ## License | 许可证
 
 [MIT](LICENSE) - Axton Liu
 
+---
+
 ## Author | 作者
 
-**Axton Liu** — AI educator, creator of MAPS AI Framework
+**Axton Liu** — AI Educator & Creator
 
+- Website: [axtonliu.ai](https://www.axtonliu.ai)
 - YouTube: [@AxtonLiu](https://youtube.com/@AxtonLiu)
-- X/Twitter: [@axtonliu](https://x.com/axtonliu)
-- Website: [axtonliu.ai](https://axtonliu.ai)
+- Twitter/X: [@axtonliu](https://x.com/axtonliu)
+
+### Learn More
+
+- [MAPS™ AI Agent Course](https://www.axtonliu.ai/aiagent) - Systematic AI agent skills training
+- [Claude Skills: A Systematic Guide](https://www.axtonliu.ai/newsletters/ai-2/posts/claude-agent-skills-maps-framework) - Complete methodology
+- [AI Elite Weekly Newsletter](https://www.axtonliu.ai/newsletters/ai-2) - Weekly AI insights
+- [Free AI Course](https://www.axtonliu.ai/axton-free-course) - Get started with AI
+
+---
+
+© AXTONLIU™ & AI 精英学院™ 版权所有
