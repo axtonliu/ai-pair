@@ -7,7 +7,7 @@ description: |
 
   Trigger: /ai-pair, ai pair, dev-team, content-team, team-stop
 metadata:
-  version: 1.0.0
+  version: 1.2.0
 ---
 
 # AI Pair Collaboration
@@ -143,6 +143,21 @@ Members:
 Awaiting your first task.
 ```
 
+## CLI Failure Protocol (Shared)
+
+All reviewer agents follow this protocol. Team Lead includes it in each reviewer's prompt.
+
+```
+CLI Failure Protocol:
+- Before calling the CLI, create a unique temp file: REVIEW_FILE=$(mktemp /tmp/review-XXXXXX.txt)
+  Write content to $REVIEW_FILE. This prevents concurrent tasks from overwriting each other.
+- If the CLI command is not found → report "[CLI_NAME] CLI not installed" to team-lead immediately. Do NOT substitute your own review.
+- If the CLI returns an error (auth, timeout, rate-limit, empty output, non-zero exit code) → report the exact error message and exit code to team-lead. Then provide your own analysis ONLY in a clearly labeled "[Claude Fallback — [CLI_NAME] unavailable]" section.
+- If the CLI output contains ANSI escape codes or garbled characters → pipe through `cat -v` or set `NO_COLOR=1` before the CLI call.
+- NEVER silently skip the CLI call.
+- Clean up: rm -f $REVIEW_FILE after capturing output.
+```
+
 ## Agent Prompt Templates
 
 ### Developer Agent (Dev Team)
@@ -207,12 +222,13 @@ Project path: {project_path}
 
 Review process:
 1. Read relevant code changes using Read/Glob/Grep
-2. Write the code/diff to a temp file:
-   Write the content to /tmp/codex-review-input.txt
-3. MANDATORY — Use Bash tool to call Codex CLI:
-   codex exec "Review the code in /tmp/codex-review-input.txt for bugs, security issues, concurrency problems, performance, and edge cases. Be specific about file paths and line numbers. Output in Chinese." 2>&1
+2. Create a unique temp file and write the code/diff to it:
+   REVIEW_FILE=$(mktemp /tmp/codex-review-XXXXXX.txt)
+3. MANDATORY — Use Bash tool to call Codex CLI via stdin pipe:
+   cat $REVIEW_FILE | codex exec "Review this code for bugs, security issues, concurrency problems, performance, and edge cases. Be specific about file paths and line numbers. Output in Chinese." 2>&1
 4. Capture the FULL CLI output. Do not summarize or rewrite it.
-5. Report to team-lead via SendMessage:
+5. Clean up: rm -f $REVIEW_FILE
+6. Report to team-lead via SendMessage:
 
    ## Codex Code Review
 
@@ -237,12 +253,7 @@ Review process:
 
 Focus: bugs, security vulnerabilities, concurrency/race conditions, performance, edge cases.
 
-CLI Failure Protocol:
-- If `codex` command is not found → report "Codex CLI not installed" to team-lead immediately. Do NOT substitute your own review.
-- If codex returns an error (auth, timeout, etc.) → report the exact error to team-lead. Then provide your own analysis ONLY as a clearly labeled "[Claude Fallback — Codex CLI unavailable]" section.
-- NEVER silently skip the CLI call.
-
-Stay active for next review task.
+Follow the shared CLI Failure Protocol (see above). Stay active for next review task.
 ```
 
 ### Codex Reviewer Agent (Content Team)
@@ -256,12 +267,13 @@ If you skip the CLI call, the entire point of this multi-model team is defeated.
 
 Review process:
 1. Understand the content and context
-2. Write the content to a temp file:
-   Write the content to /tmp/codex-review-content.txt
-3. MANDATORY — Use Bash tool to call Codex CLI:
-   codex exec "Review the content in /tmp/codex-review-content.txt for logic, accuracy, structure, and fact-checking. Be specific. Output in Chinese." 2>&1
+2. Create a unique temp file and write the content to it:
+   REVIEW_FILE=$(mktemp /tmp/codex-review-XXXXXX.txt)
+3. MANDATORY — Use Bash tool to call Codex CLI via stdin pipe:
+   cat $REVIEW_FILE | codex exec "Review this content for logic, accuracy, structure, and fact-checking. Be specific. Output in Chinese." 2>&1
 4. Capture the FULL CLI output.
-5. Report to team-lead via SendMessage:
+5. Clean up: rm -f $REVIEW_FILE
+6. Report to team-lead via SendMessage:
 
    ## Codex Content Review
 
@@ -286,12 +298,7 @@ Review process:
 
 Focus: logical coherence, factual accuracy, information architecture, technical terminology.
 
-CLI Failure Protocol:
-- If `codex` command is not found → report "Codex CLI not installed" to team-lead immediately. Do NOT substitute your own review.
-- If codex returns an error → report the exact error. Then provide your own analysis ONLY as a clearly labeled "[Claude Fallback — Codex CLI unavailable]" section.
-- NEVER silently skip the CLI call.
-
-Stay active for next review task.
+Follow the shared CLI Failure Protocol (see above). Stay active for next review task.
 ```
 
 ### Gemini Reviewer Agent (Dev Team)
@@ -307,12 +314,13 @@ Project path: {project_path}
 
 Review process:
 1. Read relevant code changes using Read/Glob/Grep
-2. Write the code/diff to a temp file:
-   Write the content to /tmp/gemini-review-input.txt
-3. MANDATORY — Use Bash tool to call Gemini CLI:
-   cat /tmp/gemini-review-input.txt | gemini -p "Review this code focusing on architecture, design patterns, maintainability, and alternative approaches. Be specific about file paths and line numbers. Output in Chinese." 2>&1
+2. Create a unique temp file and write the code/diff to it:
+   REVIEW_FILE=$(mktemp /tmp/gemini-review-XXXXXX.txt)
+3. MANDATORY — Use Bash tool to call Gemini CLI via stdin pipe:
+   cat $REVIEW_FILE | gemini -p "Review this code focusing on architecture, design patterns, maintainability, and alternative approaches. Be specific about file paths and line numbers. Output in Chinese." 2>&1
 4. Capture the FULL CLI output. Do not summarize or rewrite it.
-5. Report to team-lead via SendMessage:
+5. Clean up: rm -f $REVIEW_FILE
+6. Report to team-lead via SendMessage:
 
    ## Gemini Code Review
 
@@ -340,12 +348,7 @@ Review process:
 
 Focus: architecture, design patterns, maintainability, alternative implementations.
 
-CLI Failure Protocol:
-- If `gemini` command is not found → report "Gemini CLI not installed" to team-lead immediately. Do NOT substitute your own review.
-- If gemini returns an error → report the exact error. Then provide your own analysis ONLY as a clearly labeled "[Claude Fallback — Gemini CLI unavailable]" section.
-- NEVER silently skip the CLI call.
-
-Stay active for next review task.
+Follow the shared CLI Failure Protocol (see above). Stay active for next review task.
 ```
 
 ### Gemini Reviewer Agent (Content Team)
@@ -359,12 +362,13 @@ If you skip the CLI call, the entire point of this multi-model team is defeated.
 
 Review process:
 1. Understand the content and context
-2. Write the content to a temp file:
-   Write the content to /tmp/gemini-review-content.txt
-3. MANDATORY — Use Bash tool to call Gemini CLI:
-   cat /tmp/gemini-review-content.txt | gemini -p "Review this content for readability, engagement, style consistency, and audience fit. Be specific. Output in Chinese." 2>&1
+2. Create a unique temp file and write the content to it:
+   REVIEW_FILE=$(mktemp /tmp/gemini-review-XXXXXX.txt)
+3. MANDATORY — Use Bash tool to call Gemini CLI via stdin pipe:
+   cat $REVIEW_FILE | gemini -p "Review this content for readability, engagement, style consistency, and audience fit. Be specific. Output in Chinese." 2>&1
 4. Capture the FULL CLI output.
-5. Report to team-lead via SendMessage:
+5. Clean up: rm -f $REVIEW_FILE
+6. Report to team-lead via SendMessage:
 
    ## Gemini Content Review
 
@@ -392,12 +396,7 @@ Review process:
 
 Focus: readability, content appeal, style consistency, target audience fit.
 
-CLI Failure Protocol:
-- If `gemini` command is not found → report "Gemini CLI not installed" to team-lead immediately. Do NOT substitute your own review.
-- If gemini returns an error → report the exact error. Then provide your own analysis ONLY as a clearly labeled "[Claude Fallback — Gemini CLI unavailable]" section.
-- NEVER silently skip the CLI call.
-
-Stay active for next review task.
+Follow the shared CLI Failure Protocol (see above). Stay active for next review task.
 ```
 
 ## team-stop Flow
