@@ -7,7 +7,7 @@ description: |
 
   Trigger: /ai-pair, ai pair, dev-team, content-team, team-stop
 metadata:
-  version: 1.4.0
+  version: 1.5.0
 ---
 
 # AI Pair Collaboration
@@ -165,9 +165,13 @@ CLI Invocation Protocol:
 - For Gemini CLI: if timeout, append simplified instructions / reduce analysis dimensions.
 - Report the current degradation level to team-lead on each retry.
 
-[Temp Files]
+[File-based Content Passing (no pipes)]
 - Before calling the CLI, create a unique temp file: REVIEW_FILE=$(mktemp /tmp/review-XXXXXX.txt)
   Write content to $REVIEW_FILE. This prevents concurrent tasks from overwriting each other.
+- Do NOT pipe long content via stdin (cat $FILE | cli ...) — pipes can truncate, mis-encode, or overflow buffers.
+- Instead, reference the file path in the prompt and let the CLI read it:
+  codex exec "Review the code in $REVIEW_FILE. Focus on ..."
+  gemini -p "Review the content in $REVIEW_FILE. Focus on ..."
 
 [Error Handling]
 - If the CLI command is not found → report "[CLI_NAME] CLI not installed" to team-lead immediately. Do NOT substitute your own review.
@@ -248,9 +252,10 @@ Review process:
    a. If given a specific commit SHA → use `codex review --commit <SHA>`
    b. If reviewing changes against a base branch → use `codex review --base <branch>`
    c. If reviewing uncommitted changes → use `codex review --uncommitted`
-   d. If none of the above apply (e.g. reviewing arbitrary code snippets) → use stdin pipe:
+   d. If none of the above apply (e.g. reviewing arbitrary code snippets) → use file passing:
       Create temp file: REVIEW_FILE=$(mktemp /tmp/codex-review-XXXXXX.txt)
-      cat $REVIEW_FILE | codex exec "Review this code for bugs, security issues, concurrency problems, performance, and edge cases. Be specific about file paths and line numbers." 2>&1
+      Write code/diff to $REVIEW_FILE
+      codex exec "Review the code in $REVIEW_FILE for bugs, security issues, concurrency problems, performance, and edge cases. Be specific about file paths and line numbers." 2>&1
 3. MANDATORY — Use Bash tool to call Codex CLI:
    ⚠️ Bash tool MUST set timeout: 600000 (10 minutes)
 
@@ -306,9 +311,9 @@ Review process:
 1. Understand the content and context
 2. Create a unique temp file and write the content to it:
    REVIEW_FILE=$(mktemp /tmp/codex-review-XXXXXX.txt)
-3. MANDATORY — Use Bash tool to call Codex CLI via stdin pipe:
+3. MANDATORY — Use Bash tool to call Codex CLI (file passing, no pipes):
    ⚠️ Bash tool MUST set timeout: 600000 (10 minutes)
-   cat $REVIEW_FILE | codex exec "Review this content for logic, accuracy, structure, and fact-checking. Be specific. Output in Chinese." 2>&1
+   codex exec "Review the content in $REVIEW_FILE for logic, accuracy, structure, and fact-checking. Be specific." 2>&1
 4. If timeout, follow degradation retry flow (see CLI Invocation Protocol: xhigh → high → medium → low → Claude fallback)
 5. Capture the FULL CLI output.
 6. Clean up: rm -f $REVIEW_FILE
@@ -355,9 +360,9 @@ Review process:
 1. Read relevant code changes using Read/Glob/Grep
 2. Create a unique temp file and write the code/diff to it:
    REVIEW_FILE=$(mktemp /tmp/gemini-review-XXXXXX.txt)
-3. MANDATORY — Use Bash tool to call Gemini CLI via stdin pipe:
+3. MANDATORY — Use Bash tool to call Gemini CLI (file passing, no pipes):
    ⚠️ Bash tool MUST set timeout: 600000 (10 minutes)
-   cat $REVIEW_FILE | gemini -p "Review this code focusing on architecture, design patterns, maintainability, and alternative approaches. Be specific about file paths and line numbers. Output in Chinese." 2>&1
+   gemini -p "Review the code in $REVIEW_FILE focusing on architecture, design patterns, maintainability, and alternative approaches. Be specific about file paths and line numbers." 2>&1
 4. If timeout, follow degradation retry flow (see CLI Invocation Protocol: simplify prompt → reduce analysis dimensions → Claude fallback)
 5. Capture the FULL CLI output. Do not summarize or rewrite it.
 6. Clean up: rm -f $REVIEW_FILE
@@ -405,9 +410,9 @@ Review process:
 1. Understand the content and context
 2. Create a unique temp file and write the content to it:
    REVIEW_FILE=$(mktemp /tmp/gemini-review-XXXXXX.txt)
-3. MANDATORY — Use Bash tool to call Gemini CLI via stdin pipe:
+3. MANDATORY — Use Bash tool to call Gemini CLI (file passing, no pipes):
    ⚠️ Bash tool MUST set timeout: 600000 (10 minutes)
-   cat $REVIEW_FILE | gemini -p "Review this content for readability, engagement, style consistency, and audience fit. Be specific. Output in Chinese." 2>&1
+   gemini -p "Review the content in $REVIEW_FILE for readability, engagement, style consistency, and audience fit. Be specific." 2>&1
 4. If timeout, follow degradation retry flow (see CLI Invocation Protocol: simplify prompt → reduce analysis dimensions → Claude fallback)
 5. Capture the FULL CLI output.
 6. Clean up: rm -f $REVIEW_FILE
