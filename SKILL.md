@@ -7,7 +7,7 @@ description: |
 
   Trigger: /ai-pair, ai pair, dev-team, content-team, team-stop
 metadata:
-  version: 1.2.0
+  version: 1.3.0
 ---
 
 # AI Pair Collaboration
@@ -143,18 +143,40 @@ Members:
 Awaiting your first task.
 ```
 
-## CLI Failure Protocol (Shared)
+## CLI Invocation Protocol (Shared)
 
 All reviewer agents follow this protocol. Team Lead includes it in each reviewer's prompt.
 
 ```
-CLI Failure Protocol:
+CLI Invocation Protocol:
+
+[Timeout]
+- All Bash tool calls to external CLIs MUST set timeout: 600000 (10 minutes).
+- External CLIs (codex/gemini) need 10-15 seconds to load skills,
+  plus model reasoning time. The default 2-minute timeout is far too short.
+
+[Reasoning Level Degradation Retry]
+- Codex CLI defaults to xhigh reasoning level.
+- If the CLI call times out or fails, retry with degraded reasoning in this order:
+  1. First failure → degrade to high: append "Use reasoning effort: high" to prompt
+  2. Second failure → degrade to medium: append "Use reasoning effort: medium"
+  3. Third failure → degrade to low: append "Use reasoning effort: low"
+  4. Fourth failure → Claude fallback analysis (last resort)
+- For Gemini CLI: if timeout, append simplified instructions / reduce analysis dimensions.
+- Report the current degradation level to team-lead on each retry.
+
+[Temp Files]
 - Before calling the CLI, create a unique temp file: REVIEW_FILE=$(mktemp /tmp/review-XXXXXX.txt)
   Write content to $REVIEW_FILE. This prevents concurrent tasks from overwriting each other.
+
+[Error Handling]
 - If the CLI command is not found → report "[CLI_NAME] CLI not installed" to team-lead immediately. Do NOT substitute your own review.
-- If the CLI returns an error (auth, timeout, rate-limit, empty output, non-zero exit code) → report the exact error message and exit code to team-lead. Then provide your own analysis ONLY in a clearly labeled "[Claude Fallback — [CLI_NAME] unavailable]" section.
-- If the CLI output contains ANSI escape codes or garbled characters → pipe through `cat -v` or set `NO_COLOR=1` before the CLI call.
+- If the CLI returns an error (auth, rate-limit, empty output, non-zero exit code) → report the exact error message and exit code, then follow the degradation retry flow.
+- If the CLI output contains ANSI escape codes or garbled characters → set `NO_COLOR=1` before the CLI call or pipe through `cat -v`.
 - NEVER silently skip the CLI call.
+- Only use Claude fallback after ALL FOUR degradation retries have failed, clearly labeled "[Claude Fallback — [CLI_NAME] four retries all failed]".
+
+[Cleanup]
 - Clean up: rm -f $REVIEW_FILE after capturing output.
 ```
 
@@ -225,14 +247,16 @@ Review process:
 2. Create a unique temp file and write the code/diff to it:
    REVIEW_FILE=$(mktemp /tmp/codex-review-XXXXXX.txt)
 3. MANDATORY — Use Bash tool to call Codex CLI via stdin pipe:
+   ⚠️ Bash tool MUST set timeout: 600000 (10 minutes)
    cat $REVIEW_FILE | codex exec "Review this code for bugs, security issues, concurrency problems, performance, and edge cases. Be specific about file paths and line numbers. Output in Chinese." 2>&1
-4. Capture the FULL CLI output. Do not summarize or rewrite it.
-5. Clean up: rm -f $REVIEW_FILE
-6. Report to team-lead via SendMessage:
+4. If timeout, follow degradation retry flow (see CLI Invocation Protocol: xhigh → high → medium → low → Claude fallback)
+5. Capture the FULL CLI output. Do not summarize or rewrite it.
+6. Clean up: rm -f $REVIEW_FILE
+7. Report to team-lead via SendMessage:
 
    ## Codex Code Review
 
-   **Source: Codex CLI** (or "Source: Claude fallback" if CLI failed)
+   **Source: Codex CLI [reasoning level]** (or "Source: Claude Fallback — four retries all failed" if all failed)
 
    ### CLI Raw Output
    {paste the actual codex CLI output here}
@@ -253,7 +277,7 @@ Review process:
 
 Focus: bugs, security vulnerabilities, concurrency/race conditions, performance, edge cases.
 
-Follow the shared CLI Failure Protocol (see above). Stay active for next review task.
+Follow the shared CLI Invocation Protocol (timeout + degradation retry). Stay active for next review task.
 ```
 
 ### Codex Reviewer Agent (Content Team)
@@ -270,14 +294,16 @@ Review process:
 2. Create a unique temp file and write the content to it:
    REVIEW_FILE=$(mktemp /tmp/codex-review-XXXXXX.txt)
 3. MANDATORY — Use Bash tool to call Codex CLI via stdin pipe:
+   ⚠️ Bash tool MUST set timeout: 600000 (10 minutes)
    cat $REVIEW_FILE | codex exec "Review this content for logic, accuracy, structure, and fact-checking. Be specific. Output in Chinese." 2>&1
-4. Capture the FULL CLI output.
-5. Clean up: rm -f $REVIEW_FILE
-6. Report to team-lead via SendMessage:
+4. If timeout, follow degradation retry flow (see CLI Invocation Protocol: xhigh → high → medium → low → Claude fallback)
+5. Capture the FULL CLI output.
+6. Clean up: rm -f $REVIEW_FILE
+7. Report to team-lead via SendMessage:
 
    ## Codex Content Review
 
-   **Source: Codex CLI** (or "Source: Claude fallback" if CLI failed)
+   **Source: Codex CLI [reasoning level]** (or "Source: Claude Fallback — four retries all failed" if all failed)
 
    ### CLI Raw Output
    {paste the actual codex CLI output here}
@@ -298,7 +324,7 @@ Review process:
 
 Focus: logical coherence, factual accuracy, information architecture, technical terminology.
 
-Follow the shared CLI Failure Protocol (see above). Stay active for next review task.
+Follow the shared CLI Invocation Protocol (timeout + degradation retry). Stay active for next review task.
 ```
 
 ### Gemini Reviewer Agent (Dev Team)
@@ -317,14 +343,16 @@ Review process:
 2. Create a unique temp file and write the code/diff to it:
    REVIEW_FILE=$(mktemp /tmp/gemini-review-XXXXXX.txt)
 3. MANDATORY — Use Bash tool to call Gemini CLI via stdin pipe:
+   ⚠️ Bash tool MUST set timeout: 600000 (10 minutes)
    cat $REVIEW_FILE | gemini -p "Review this code focusing on architecture, design patterns, maintainability, and alternative approaches. Be specific about file paths and line numbers. Output in Chinese." 2>&1
-4. Capture the FULL CLI output. Do not summarize or rewrite it.
-5. Clean up: rm -f $REVIEW_FILE
-6. Report to team-lead via SendMessage:
+4. If timeout, follow degradation retry flow (see CLI Invocation Protocol: simplify prompt → reduce analysis dimensions → Claude fallback)
+5. Capture the FULL CLI output. Do not summarize or rewrite it.
+6. Clean up: rm -f $REVIEW_FILE
+7. Report to team-lead via SendMessage:
 
    ## Gemini Code Review
 
-   **Source: Gemini CLI** (or "Source: Claude fallback" if CLI failed)
+   **Source: Gemini CLI** (or "Source: Claude Fallback — four retries all failed" if all failed)
 
    ### CLI Raw Output
    {paste the actual gemini CLI output here}
@@ -348,7 +376,7 @@ Review process:
 
 Focus: architecture, design patterns, maintainability, alternative implementations.
 
-Follow the shared CLI Failure Protocol (see above). Stay active for next review task.
+Follow the shared CLI Invocation Protocol (timeout + degradation retry). Stay active for next review task.
 ```
 
 ### Gemini Reviewer Agent (Content Team)
@@ -365,14 +393,16 @@ Review process:
 2. Create a unique temp file and write the content to it:
    REVIEW_FILE=$(mktemp /tmp/gemini-review-XXXXXX.txt)
 3. MANDATORY — Use Bash tool to call Gemini CLI via stdin pipe:
+   ⚠️ Bash tool MUST set timeout: 600000 (10 minutes)
    cat $REVIEW_FILE | gemini -p "Review this content for readability, engagement, style consistency, and audience fit. Be specific. Output in Chinese." 2>&1
-4. Capture the FULL CLI output.
-5. Clean up: rm -f $REVIEW_FILE
-6. Report to team-lead via SendMessage:
+4. If timeout, follow degradation retry flow (see CLI Invocation Protocol: simplify prompt → reduce analysis dimensions → Claude fallback)
+5. Capture the FULL CLI output.
+6. Clean up: rm -f $REVIEW_FILE
+7. Report to team-lead via SendMessage:
 
    ## Gemini Content Review
 
-   **Source: Gemini CLI** (or "Source: Claude fallback" if CLI failed)
+   **Source: Gemini CLI** (or "Source: Claude Fallback — four retries all failed" if all failed)
 
    ### CLI Raw Output
    {paste the actual gemini CLI output here}
@@ -396,7 +426,7 @@ Review process:
 
 Focus: readability, content appeal, style consistency, target audience fit.
 
-Follow the shared CLI Failure Protocol (see above). Stay active for next review task.
+Follow the shared CLI Invocation Protocol (timeout + degradation retry). Stay active for next review task.
 ```
 
 ## team-stop Flow
