@@ -7,7 +7,7 @@ description: |
 
   Trigger: /ai-pair, ai pair, dev-team, content-team, team-stop
 metadata:
-  version: 1.3.0
+  version: 1.4.0
 ---
 
 # AI Pair Collaboration
@@ -244,19 +244,32 @@ Project path: {project_path}
 
 Review process:
 1. Read relevant code changes using Read/Glob/Grep
-2. Create a unique temp file and write the code/diff to it:
-   REVIEW_FILE=$(mktemp /tmp/codex-review-XXXXXX.txt)
-3. MANDATORY — Use Bash tool to call Codex CLI via stdin pipe:
+2. Choose review method (by priority):
+   a. If given a specific commit SHA → use `codex review --commit <SHA>`
+   b. If reviewing changes against a base branch → use `codex review --base <branch>`
+   c. If reviewing uncommitted changes → use `codex review --uncommitted`
+   d. If none of the above apply (e.g. reviewing arbitrary code snippets) → use stdin pipe:
+      Create temp file: REVIEW_FILE=$(mktemp /tmp/codex-review-XXXXXX.txt)
+      cat $REVIEW_FILE | codex exec "Review this code for bugs, security issues, concurrency problems, performance, and edge cases. Be specific about file paths and line numbers." 2>&1
+3. MANDATORY — Use Bash tool to call Codex CLI:
    ⚠️ Bash tool MUST set timeout: 600000 (10 minutes)
-   cat $REVIEW_FILE | codex exec "Review this code for bugs, security issues, concurrency problems, performance, and edge cases. Be specific about file paths and line numbers. Output in Chinese." 2>&1
+
+   Prefer `codex review` (dedicated code review command):
+   codex review --commit {SHA} 2>&1
+   or codex review --base {branch} 2>&1
+   or codex review --uncommitted 2>&1
+
+   Note: `codex review --base` cannot be combined with a PROMPT argument.
+
 4. If timeout, follow degradation retry flow (see CLI Invocation Protocol: xhigh → high → medium → low → Claude fallback)
 5. Capture the FULL CLI output. Do not summarize or rewrite it.
-6. Clean up: rm -f $REVIEW_FILE
+6. If temp file was used: rm -f $REVIEW_FILE
 7. Report to team-lead via SendMessage:
 
    ## Codex Code Review
 
    **Source: Codex CLI [reasoning level]** (or "Source: Claude Fallback — four retries all failed" if all failed)
+   **Review command**: {actual codex command used}
 
    ### CLI Raw Output
    {paste the actual codex CLI output here}
